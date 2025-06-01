@@ -8,8 +8,11 @@ import Container from './ui/Container';
 import Heading from './ui/Heading';
 import Label from './ui/Label';
 import Span from './ui/Span';
+import { usePasswordGeneratorContext } from '../hooks/usePasswordGeneratorContext';
 
 function Generate() {
+  const { handleGeneratePassword } = usePasswordGeneratorContext();
+
   const formMethods = useForm<IFormInput>({
     defaultValues: {
       passwordLength: 1,
@@ -23,7 +26,7 @@ function Generate() {
   });
 
   const onSubmit: SubmitHandler<IFormInput> = (data) => {
-    console.log(data);
+    handleGeneratePassword(data);
   };
 
   return (

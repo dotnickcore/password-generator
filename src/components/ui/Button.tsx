@@ -1,10 +1,11 @@
 import type { ButtonProps } from '../../types/ButtonProps'
 
-function Button({ label, className, disabled = false }: ButtonProps) {
+function Button({ label, className, disabled = false, onClick }: ButtonProps) {
   return (
     <button
       className={className}
-      disabled={disabled}>
+      disabled={disabled}
+      onClick={onClick}>
       {label}
     </button>
   )

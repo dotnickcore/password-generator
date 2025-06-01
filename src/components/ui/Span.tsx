@@ -1,9 +1,11 @@
-import type { SpanProps } from '../../types/SpanProps'
+import type { SpanProps } from '../../types/SpanProps';
 
-function Span({ className, children }: SpanProps) {
+function Span({ className, style, children }: SpanProps) {
   return (
-    <span className={className}>{children}</span>
-  )
+    <span className={className} style={style}>
+      {children}
+    </span>
+  );
 }
 
-export default Span
+export default Span;

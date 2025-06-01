@@ -18,12 +18,14 @@ function generatePassword(options: IFormInput) {
     doesIncludeSymbols,
   } = options;
 
-  if (
-    !doesIncludeUpperCaseLetters &&
-    !doesIncludeLowerCaseLetters &&
-    !doesIncludeNumbers &&
-    !doesIncludeSymbols
-  ) {
+  // Validate at least one character type is selected
+  const totalPools = [
+    doesIncludeUpperCaseLetters,
+    doesIncludeLowerCaseLetters,
+    doesIncludeNumbers,
+    doesIncludeSymbols,
+  ].filter(Boolean).length;
+  if (totalPools === 0) {
     throw new Error('At least one character type must be selected');
   }
 
@@ -33,41 +35,44 @@ function generatePassword(options: IFormInput) {
   }
 
   // Character sets
-  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  const numberChars = '0123456789';
-  const symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const charSets = [
+    {
+      enabled: doesIncludeUpperCaseLetters,
+      chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    },
+    {
+      enabled: doesIncludeLowerCaseLetters,
+      chars: 'abcdefghijklmnopqrstuvwxyz',
+    },
+    { enabled: doesIncludeNumbers, chars: '0123456789' },
+    { enabled: doesIncludeSymbols, chars: '!@#$%^&*()_+-=[]{}|;:,.<>?' },
+  ].filter((set) => set.enabled);
 
-  // Build the character pools
-  const enabledPools: string[] = [];
-  if (doesIncludeUpperCaseLetters) enabledPools.push(uppercaseChars);
-  if (doesIncludeLowerCaseLetters) enabledPools.push(lowercaseChars);
-  if (doesIncludeNumbers) enabledPools.push(numberChars);
-  if (doesIncludeSymbols) enabledPools.push(symbolChars);
+  // Create combined pool of all enabled characters
+  const combinedPool = charSets.map((set) => set.chars).join('');
 
-  // Combined pool for remaining characters
-  const combinedPool = enabledPools.join('');
+  // Generate password characters
+  const passwordChars: string[] = [];
 
-  // Generate at least one character from each enabled pool
-  const guaranteedChars: string[] = [];
-  enabledPools.forEach((pool) => {
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    guaranteedChars.push(pool[randomIndex]);
-  });
+  // 1. First include one character from each enabled set (up to password length)
+  const setsToInclude = Math.min(passwordLength, charSets.length);
+  const shuffledSets = shuffleArray([...charSets]);
 
-  // Fill remaining slots with random characters from combined pool
-  const remainingLength = passwordLength - guaranteedChars.length;
-  const remainingChars: string[] = [];
-  for (let i = 0; i < remainingLength; i++) {
-    const randomIndex = Math.floor(Math.random() * combinedPool.length);
-    remainingChars.push(combinedPool[randomIndex]);
+  for (let i = 0; i < setsToInclude; i++) {
+    const set = shuffledSets[i];
+    const randomIndex = Math.floor(Math.random() * set.chars.length);
+    passwordChars.push(set.chars[randomIndex]);
   }
 
-  // Combine and shuffle the characters
-  const allChars = [...guaranteedChars, ...remainingChars];
-  const shuffledChars = shuffleArray(allChars);
+  // 2. Fill remaining characters from the combined pool
+  const remainingLength = passwordLength - passwordChars.length;
+  for (let i = 0; i < remainingLength; i++) {
+    const randomIndex = Math.floor(Math.random() * combinedPool.length);
+    passwordChars.push(combinedPool[randomIndex]);
+  }
 
-  return shuffledChars.join('');
+  // 3. Shuffle the final characters
+  return shuffleArray(passwordChars).join('');
 }
 
 export default generatePassword;
